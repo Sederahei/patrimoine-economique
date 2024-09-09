@@ -1,35 +1,29 @@
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
 import fs from 'node:fs/promises';
 
-async function readFile(path) {
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const filePath = resolve(__dirname, 'data.json');
+export async function readFile() {
   try {
-    const data = await fs.readFile(path, { encoding: 'utf8' });
-    return {
-      status: "OK",
-      data: JSON.parse(data),
-    };
-  } catch (err) {
-    return {
-      status: "ERROR",
-      error: err,
-    };
+  const data = await fs.readFile(filePath, 'utf-8');
+    return { status: 'OK', data: JSON.parse(data) };
+  } catch (error) {
+    console.error('Erreur lors de la lecture du fichier:', error);
+    return { status: 'ERROR', error: error.message };
   }
 }
-
-
-async function writeFile(path, data) {
+export async function writeFile(data) {
   try {
-    await fs.writeFile(path, JSON.stringify(data), {
-      encoding: 'utf8',
-    });
-    return {
-      status: "OK",
-    };
-  } catch (err) {
-    return {
-      status: "ERROR",
-      error: err,
-    };
+    if (typeof data !== 'object' || data === null) {
+      throw new Error("Les données doivent être un objet JSON valide.");
+    }
+    await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
+    return { status: 'OK' };
+  } catch (error) {
+    console.error('Erreur lors de l\'écriture du fichier:', error);
+    return { status: 'ERROR', error: error.message };
   }
 }
-
-export { readFile, writeFile };
